@@ -2,11 +2,14 @@ import { HomeContainer, Product, SliderContainer } from '@/styles/pages/home'
 import Image from 'next/image'
 
 import { CartButton } from '@/components/CartButton'
+import { IProduct } from '@/contexts/CartContext'
+import { useCart } from '@/hooks/useCart'
 import { stripe } from '@/lib/stripe'
 import useEmblaCarousel from 'embla-carousel-react'
 import { GetStaticProps } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
+import { MouseEvent } from 'react'
 import Stripe from 'stripe'
 
 interface HomeProps {
@@ -15,6 +18,8 @@ interface HomeProps {
     name: string
     imageUrl: string
     price: string
+    numberPrice: number
+    defaultPriceId: string
   }[]
 }
 
@@ -24,6 +29,15 @@ export default function Home({ products }: HomeProps) {
     skipSnaps: false,
     dragFree: true,
   })
+  const { addToCart, checkIfItemAlreadyExists } = useCart()
+
+  function handleAddToCart(
+    event: MouseEvent<HTMLButtonElement>,
+    product: IProduct,
+  ) {
+    event.preventDefault()
+    addToCart(product)
+  }
 
   return (
     <>
@@ -53,7 +67,12 @@ export default function Home({ products }: HomeProps) {
                         <strong>{product.name}</strong>
                         <span>{product.price}</span>
                       </div>
-                      <CartButton color="green" size="large" />
+                      <CartButton
+                        color="green"
+                        size="large"
+                        disabled={checkIfItemAlreadyExists(product.id)}
+                        onClick={(e) => handleAddToCart(e, product)}
+                      />
                     </footer>
                   </Product>
                 </Link>
@@ -81,6 +100,8 @@ export const getStaticProps: GetStaticProps = async () => {
         style: 'currency',
         currency: 'BRL',
       }).format(price.unit_amount! / 100),
+      numberPrice: price.unit_amount! / 100,
+      defaultPriceId: price.id,
     }
   })
 
