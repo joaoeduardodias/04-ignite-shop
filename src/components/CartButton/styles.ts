@@ -17,4 +17,9 @@ export const CartButtonContainer = styled('button', {
   svg: {
     fontSize: 24,
   },
+
+  '&:disabled': {
+    opacity: 0.6,
+    cursor: 'not-allowed',
+  },
 })
