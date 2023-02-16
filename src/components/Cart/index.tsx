@@ -1,7 +1,9 @@
 import { useCart } from '@/hooks/useCart'
 import * as Dialog from '@radix-ui/react-dialog'
+import axios from 'axios'
 import Image from 'next/image'
 import { X } from 'phosphor-react'
+import { useState } from 'react'
 import { CartButton } from '../CartButton'
 import {
   CartClose,
@@ -16,7 +18,8 @@ import {
 export function Cart() {
   const { cartItems, removeCartItem, cartTotal } = useCart()
   const cartQuantity = cartItems.length
-
+  const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] =
+    useState(false)
   const formattedCartTotal = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
@@ -24,6 +27,21 @@ export function Cart() {
 
   function handleRemoveToCart(productId: string) {
     removeCartItem(productId)
+  }
+
+  async function handleCheckout() {
+    try {
+      setIsCreatingCheckoutSession(true)
+      const response = await axios.post('/api/checkout', {
+        products: cartItems,
+      })
+      const { checkoutUrl } = response.data
+
+      window.location.href = checkoutUrl
+    } catch (err) {
+      setIsCreatingCheckoutSession(false)
+      alert('Falha ao redirecionar ao checkout!')
+    }
   }
 
   return (
@@ -76,7 +94,12 @@ export function Cart() {
                 <p>{formattedCartTotal}</p>
               </div>
             </FinalizationDetails>
-            <button>Finalizar compra</button>
+            <button
+              onClick={handleCheckout}
+              disabled={isCreatingCheckoutSession || cartQuantity <= 0}
+            >
+              Finalizar compra
+            </button>
           </CartFinalization>
         </CartContent>
       </Dialog.Portal>
