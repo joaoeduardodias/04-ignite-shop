@@ -38,7 +38,10 @@ export default function Success({
 
         <p>
           Uhuul <strong>{customerName}</strong>, sua compra de{' '}
-          {productsImages.length} camisetas já está a caminho de sua casa.
+          {`${productsImages.length} ${
+            productsImages.length === 1 ? 'camiseta' : 'camisetas'
+          }`}{' '}
+          já está a caminho de sua casa.
         </p>
         <Link href="/">Voltar ao catálogo</Link>
       </SuccessContainer>
